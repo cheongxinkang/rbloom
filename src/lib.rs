@@ -22,6 +22,7 @@ impl Bloom {
         expected_items: u64,
         false_positive_rate: f64,
         num_func: u64,
+        size_of_bf: u64,
         hash_func: Option<&PyAny>,
     ) -> PyResult<Self> {
         // Check the inputs
@@ -48,8 +49,8 @@ impl Bloom {
 
         // Calculate the parameters for the filter
         let k = num_func;
-        let size_in_bits = 
-        (-1.0 * k as f64 * expected_items as f64 / ((1.0 - false_positive_rate.powf(1.0 / k as f64)).ln())).round();
+        let size_in_bits = size_of_bf;
+        // (-1.0 * k as f64 * expected_items as f64 / ((1.0 - false_positive_rate.powf(1.0 / k as f64)).ln())).round();
         // -1.0 * (expected_items as f64) * false_positive_rate.ln() / 2.0f64.ln().powi(2); // original function for size_in_bits
 
         let hash_func = match hash_func {
