@@ -21,6 +21,7 @@ impl Bloom {
     fn new(
         expected_items: u64,
         false_positive_rate: f64,
+        num_func: u64,
         hash_func: Option<&PyAny>,
     ) -> PyResult<Self> {
         // Check the inputs
@@ -39,11 +40,17 @@ impl Bloom {
                 "expected_items must be greater than 0",
             ));
         }
+        if num_func == 0 {
+            return Err(PyValueError::new_err(
+                "num_func must be greater than 0",
+            ));
+        }
 
         // Calculate the parameters for the filter
-        let size_in_bits =
-            -1.0 * (expected_items as f64) * false_positive_rate.ln() / 2.0f64.ln().powi(2);
-        let k = (size_in_bits / expected_items as f64) * 2.0f64.ln();
+        let k = num_func;
+        let size_in_bits = 
+        (-1.0 * k as f64 * expected_items as f64 / ((1.0 - false_positive_rate.powf(1.0 / k as f64)).ln())).round();
+        // -1.0 * (expected_items as f64) * false_positive_rate.ln() / 2.0f64.ln().powi(2); // original function for size_in_bits
 
         let hash_func = match hash_func {
             // if __builtins__.hash was passed, use None instead
@@ -64,6 +71,12 @@ impl Bloom {
     #[getter]
     fn size_in_bits(&self) -> u64 {
         self.filter.len()
+    }
+
+    /// Bloom filter vector as a string
+    #[getter]
+    fn to_string(&self) -> String {
+        self.filter.to_string()
     }
 
     /// Retrieve the hash_func given to __init__
@@ -423,6 +436,18 @@ mod bitline {
         /// Returns the number of bits in the BitLine
         pub fn len(&self) -> u64 {
             self.bits.len() as u64 * 8
+        }
+
+        // Returns the vector in bits as a string
+        pub fn to_string(&self) -> String {
+            let mut result = String::new();
+            for byte in self.bits.iter() {
+                for i in (0..8).rev() {
+                    let bit = (byte >> i) & 1;
+                    result.push_str(&bit.to_string());
+                }
+            }
+            result
         }
 
         pub fn clear(&mut self) {

@@ -14,6 +14,10 @@ class Bloom:
     @property
     def size_in_bits(self) -> int: ...
 
+    # vector of bits as a string
+    @property
+    def to_string(self) -> str: ...
+
     # retrieve the hash_func given to __init__
     @property
     def hash_func(self) -> Callable[[Any], int]: ...
